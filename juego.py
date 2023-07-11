@@ -10,7 +10,7 @@ import powerup
 import misil
 import flechitaSAque
 
-#Info del juego y Pantalla
+#Info del juego y Pantalla #test
 WIDTH = 1280 
 HEIGHT = 720
 SCORE = 0
