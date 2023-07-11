@@ -1,4 +1,5 @@
 import pygame
+import menu as main
 import jugador
 import pelota as t
 import ladrillo as ld
@@ -9,6 +10,7 @@ import random as rn #generar numeros al azar
 import powerup
 import misil
 import flechitaSAque
+import pygame_menu
 
 #Info del juego y Pantalla #test
 WIDTH = 1280 
@@ -143,6 +145,8 @@ def breakBrick(brk,proyectile):
     else:
         return 0
 
+
+
 #Rebote vertical.
 def bounceV(brk, b):
     SCR.blit(BACKGROUND, b.rect, b.rect)
@@ -202,7 +206,6 @@ def multiBall(SCR,ballGroup,b,num):
                     ball.invertHSpeed()
                 if i % 2 != 0:
                     ball.invertVSpeed()
-            
 
 
 
@@ -210,6 +213,7 @@ def updateBallPosition(SCR,ball):
     SCR.blit(BACKGROUND, ball.rect, ball.rect)
     ball.move()
     SCR.blit(ball.image, ball.rect) 
+
 
 
 pygame.init()
@@ -242,245 +246,251 @@ lives = 3
 points = 0
 
 waitingServe = True
-playing = True
+playing = False
 shootPU = False
+
+
+
 
 SCR.blit(player.image, player.rect)
 angle = 0
 flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
-#Bucle principal
-while playing:
-    #Eventos del juego
-    for event in pygame.event.get():
-        #Cierra el juego con la cruz
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-            playing = False
-        #Eventos de apretar una tecla
-        elif event.type == pygame.KEYDOWN:
-            if (event.key == pygame.K_SPACE and waitingServe):
-                waitingServe = False     
-                ball.serve(flecha.angle)    
-            elif (event.key == pygame.K_SPACE and not waitingServe and shootPU):
-                missile = misil.Misille(player.rect.centerx,player.rect.y)                
-                missileGroup.add([missile])
-                
-                player.setShoot(player.getShoot()-1)
-                if player.getShoot() == 0:
-                    shootPU = False
+while not playing:
+    main.menu.mainloop(SCR)
+    SCR.blit(BACKGROUND, (0, 0))
+    time.sleep(3)
+    #playing = True
+    #Bucle principal
+    while playing:
+        #Eventos del juego
+        for event in pygame.event.get():
+            #Cierra el juego con la cruz
+            if event.type == pygame.QUIT:
+                playing = False
+            #Eventos de apretar una tecla
+            elif event.type == pygame.KEYDOWN:
+                if (event.key == pygame.K_SPACE and waitingServe):
+                    waitingServe = False     
+                    ball.serve(flecha.angle)    
+                elif (event.key == pygame.K_SPACE and not waitingServe and shootPU):
+                    missile = misil.Misille(player.rect.centerx,player.rect.y)                
+                    missileGroup.add([missile])
+                    
+                    player.setShoot(player.getShoot()-1)
+                    if player.getShoot() == 0:
+                        shootPU = False
 
-    joystick = pygame.key.get_pressed()
-
-    #Movimiento del jugador
-    if joystick[pygame.K_LEFT]:
-        SCR.blit(BACKGROUND, player.rect, player.rect)
-        player.moveLeft(0)
-        SCR.blit(player.image, player.rect) 
-    elif joystick[pygame.K_RIGHT]:
-        SCR.blit(BACKGROUND, player.rect, player.rect)
-        player.moveRight(WIDTH-10)
-        SCR.blit(player.image, player.rect)
-    
-    #SAque del jugador. si el jugador saco, mueve la pelota
-    if waitingServe == True:
         joystick = pygame.key.get_pressed()
-        SCR.blit(BACKGROUND,(0,0))
-        SCR.blit(player.image,player.rect)
-        for brick in brickGroup:
-            SCR.blit(brick.image,brick.rect)
-        flecha.update(1,joystick)
-        flecha.draw(SCR,player.rect.centerx, player.rect.centery - ball.rect.height)
-        serve(player,ball)
 
-    for ball in ballGroup:
-        #Choque con el jugador
-        if pygame.sprite.spritecollideany(ball, playerGroup):
-            if abs(ball.rect.top - player.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
-                bounceV(player, ball)
-
-            if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
-                bounceV(player, ball)
-
-            if abs(ball.rect.left - player.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
-                bounceH(player, ball)
-
-            if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
-                bounceH(player, ball)
-
-
-    for ball in ballGroup:
-        #Choque con limite de la pantalla
-        if ball.rect.top <= 0 - COLLISION_TOLARANCE :
-            ball.invertVSpeed()
-        if ball.rect.left <= 0 or ball.rect.right >= WIDTH:
-            ball.invertHSpeed()
-
-    for ball in ballGroup:
-        updateBallPosition(SCR,ball)
-
-    for ball in ballGroup:  
-        #Rebote de la pelota con los ladrillos 
-        collisionedBricks = pygame.sprite.spritecollide(ball, brickGroup, False)
-        if len(collisionedBricks) > 0:
-            ball.bounce.play()  
-            for brick in collisionedBricks:
-                SCR.blit(brick.image, brick.rect)
-                if ball.strenght > 1:
-                    ball.strenght-= brick.resistance
-                    points = breakBrick(brick,ball)    
-                    if ball.strenght <= 0:
-                        ball.strenght = 1
-                    SCR.blit(BACKGROUND, ball.rect, ball.rect)
-                    SCR.blit(ball.image, ball.rect)
-                    SCR.blit(BACKGROUND, brick.rect, brick.rect)
-                else:
-                    #si pelota fuerza == 1
-                    if abs(ball.rect.top - brick.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
-                        bounceV(brick, ball)
-                        points = breakBrick(brick,ball)
-                    if abs(ball.rect.bottom - brick.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
-                        bounceV(brick, ball)
-                        points = breakBrick(brick,ball)
-                    if abs(ball.rect.left - brick.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
-                        bounceH(brick, ball)
-                        points = breakBrick(brick,ball)
-                    if abs(ball.rect.right - brick.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
-                        bounceH(brick, ball)
-                        points = breakBrick(brick,ball)
-            
-                resistenceColor(brick,SCR)
-                addPowerUp(points,powerUpGroup,brick,SCR)
-
-                isFallingBrick(SCR,ball,brick)
-                
-            
-
-    #Ladrillo flojo. si se choco una vez, se cae. Si le pega al jugador le resta una vida.
-    #Si el ladrillo se va por abajo del jugador sin pegarle se elimina
-    for brick in brickGroup:
-        if isinstance(brick, ld.fallingBrick) and brick.falling:
-                SCR.blit(BACKGROUND, brick.rect, brick.rect)
-                brick.fall()
-                SCR.blit(brick.image,brick.rect)   
-        if pygame.sprite.spritecollideany(brick, playerGroup):
-            lives -= 1
-            SCR.blit(BACKGROUND, brick.rect, brick.rect)
-            brickGroup.remove(brick)
-        if brick.rect.y > HEIGHT + 10:
-            SCR.blit(BACKGROUND, brick.rect, brick.rect)
-            brickGroup.remove(brick)
-            del brick
-
-    #tira los tiros
-    if (shootPU or len(missileGroup)>0):
-        try:        
-            for m in missileGroup:    
-                SCR.blit(BACKGROUND,m.rect,m.rect)
-                m.lauch() 
-                SCR.blit(m.image,m.rect)
-                if m.rect.y < 0 - m.rect.height - 40:
-                    missileGroup.remove(m)
-                    del m      
-        except Exception as e:
-           pass
-
-    
-
-    #Choque de los tiros con los ladrillos
-    for m in  missileGroup:   
-        crashedBrick = pygame.sprite.spritecollideany(m, brickGroup)
-        if crashedBrick:           
-                points = breakBrick(crashedBrick,m)
-                addPowerUp(points,powerUpGroup,crashedBrick,SCR)
-                resistenceColor(crashedBrick,SCR)
-                isFallingBrick(SCR,m,crashedBrick)
-                if points > 0:
-                    brickGroup.remove(crashedBrick)    
-                SCR.blit(BACKGROUND, crashedBrick.rect, crashedBrick.rect)
-                missileGroup.remove(m)
-                SCR.blit(BACKGROUND,m.rect,m.rect)
-                del m
-
-    #hace caer al power up
-    if len(powerUpGroup) > 0:
-        for power in powerUpGroup:
-            SCR.blit(BACKGROUND, power.rect, power.rect)
-            power.fallDown()    
-            SCR.blit(power.image, power.rect)
+        #Movimiento del jugador
+        if joystick[pygame.K_LEFT]:
+            SCR.blit(BACKGROUND, player.rect, player.rect)
+            player.moveLeft(0)
+            SCR.blit(player.image, player.rect) 
+        elif joystick[pygame.K_RIGHT]:
+            SCR.blit(BACKGROUND, player.rect, player.rect)
+            player.moveRight(WIDTH-10)
+            SCR.blit(player.image, player.rect)
+        
+        #SAque del jugador. si el jugador saco, mueve la pelota
+        if waitingServe == True:
+            joystick = pygame.key.get_pressed()
+            SCR.blit(BACKGROUND,(0,0))
+            SCR.blit(player.image,player.rect)
             for brick in brickGroup:
                 SCR.blit(brick.image,brick.rect)
+            flecha.update(1,joystick)
+            flecha.draw(SCR,player.rect.centerx, player.rect.centery - ball.rect.height)
+            serve(player,ball) 
 
-    #Verifica si el power up que cae choca con el jugador
-    powerUpColisioned = pygame.sprite.spritecollide(player, powerUpGroup, True)
-    #si choca, le da el power up al jugador
-    if len(powerUpColisioned) > 0:
-        for power in powerUpColisioned:
-            SCR.blit(BACKGROUND, powerUpColisioned[0], powerUpColisioned[0])
-            if powerUpColisioned[0].powerUp == POWER_LARGE[0]:
-                SCR.blit(BACKGROUND, player.rect, player.rect)
-                player.getBig()
-                SCR.blit(player.image, player.rect)
-            elif powerUpColisioned[0].powerUp == POWER_FUERZA[0]:
-                ball.strengthUp()
-            elif powerUpColisioned[0].powerUp == POWER_SMALL[0]:
-                SCR.blit(BACKGROUND, player.rect, player.rect)
-                player.getSmall()
-                SCR.blit(player.image, player.rect)
-            elif powerUpColisioned[0].powerUp == POWER_SHOOT[0]:
-                player.setShoot(5)
-                shootPU = True
-            elif powerUpColisioned[0].powerUp == POWER_MULTIBALL[0]:
-                if not waitingServe:
-                    multiBall(SCR,ballGroup,ball,3)
-                    updateBallPosition(SCR,ball)
-                else:
-                    pass
-
-            SCR.blit(BACKGROUND, power, power)
-            powerUpGroup.remove(power)
-
-            
-            
-
-    drawScore()
-    drawLives()
-    
-    #Actualiza la pantalla
-    pygame.display.flip()
-
-
-    
-    if len(ballGroup) == 0:
-        lives -=1
-
-    if len(ballGroup)>=2:
-       for ball in ballGroup:
-            if ball.rect.y > HEIGHT + 20:
-                ballGroup.remove(ball)
-                del ball
-
-    #Si la pelota se cae por abajo el jugador pierde una vida. Si pierde todas las vidas pierde el juego.
-    if len(ballGroup) == 1:
         for ball in ballGroup:
-            if ball.rect.top > HEIGHT + 20:
-                if lives > 1:
-                    lives -=1
-                    waitingServe = True   
-                    serve(player,ball)
-                    SCR.blit(BACKGROUND,flecha.rect,flecha.rect)
-                else:
-                    gameOver()
-        
-    #condicion para ganar el juego
-    if len(brickGroup) == 0:
-        win()
+            #Choque con el jugador
+            if pygame.sprite.spritecollideany(ball, playerGroup):
+                if abs(ball.rect.top - player.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
+                    bounceV(player, ball)
 
-    if lives == 0:
-            gameOver()
-    
-    
-    
-    clock.tick(60)
+                if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
+                    bounceV(player, ball)
+
+                if abs(ball.rect.left - player.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
+                    bounceH(player, ball)
+
+                if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
+                    bounceH(player, ball)
+
+
+        for ball in ballGroup:
+            #Choque con limite de la pantalla
+            if ball.rect.top <= 0 - COLLISION_TOLARANCE :
+                ball.invertVSpeed()
+            if ball.rect.left <= 0 or ball.rect.right >= WIDTH:
+                ball.invertHSpeed()
+
+        for ball in ballGroup:
+            updateBallPosition(SCR,ball)
+
+        for ball in ballGroup:  
+            #Rebote de la pelota con los ladrillos 
+            collisionedBricks = pygame.sprite.spritecollide(ball, brickGroup, False)
+            if len(collisionedBricks) > 0:
+                ball.bounce.play()  
+                for brick in collisionedBricks:
+                    SCR.blit(brick.image, brick.rect)
+                    if ball.strenght > 1:
+                        ball.strenght-= brick.resistance
+                        points = breakBrick(brick,ball)    
+                        if ball.strenght <= 0:
+                            ball.strenght = 1
+                        SCR.blit(BACKGROUND, ball.rect, ball.rect)
+                        SCR.blit(ball.image, ball.rect)
+                        SCR.blit(BACKGROUND, brick.rect, brick.rect)
+                    else:
+                        #si pelota fuerza == 1
+                        if abs(ball.rect.top - brick.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
+                            bounceV(brick, ball)
+                            points = breakBrick(brick,ball)
+                        if abs(ball.rect.bottom - brick.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
+                            bounceV(brick, ball)
+                            points = breakBrick(brick,ball)
+                        if abs(ball.rect.left - brick.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
+                            bounceH(brick, ball)
+                            points = breakBrick(brick,ball)
+                        if abs(ball.rect.right - brick.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
+                            bounceH(brick, ball)
+                            points = breakBrick(brick,ball)
+                
+                    resistenceColor(brick,SCR)
+                    addPowerUp(points,powerUpGroup,brick,SCR)
+
+                    isFallingBrick(SCR,ball,brick)
+                    
+                
+
+        #Ladrillo flojo. si se choco una vez, se cae. Si le pega al jugador le resta una vida.
+        #Si el ladrillo se va por abajo del jugador sin pegarle se elimina
+        for brick in brickGroup:
+            if isinstance(brick, ld.fallingBrick) and brick.falling:
+                    SCR.blit(BACKGROUND, brick.rect, brick.rect)
+                    brick.fall()
+                    SCR.blit(brick.image,brick.rect)   
+            if pygame.sprite.spritecollideany(brick, playerGroup):
+                lives -= 1
+                SCR.blit(BACKGROUND, brick.rect, brick.rect)
+                brickGroup.remove(brick)
+            if brick.rect.y > HEIGHT + 10:
+                SCR.blit(BACKGROUND, brick.rect, brick.rect)
+                brickGroup.remove(brick)
+                del brick
+
+        #tira los tiros
+        if (shootPU or len(missileGroup)>0):
+            try:        
+                for m in missileGroup:    
+                    SCR.blit(BACKGROUND,m.rect,m.rect)
+                    m.lauch() 
+                    SCR.blit(m.image,m.rect)
+                    if m.rect.y < 0 - m.rect.height - 40:
+                        missileGroup.remove(m)
+                        del m      
+            except Exception as e:
+                pass
+
+        
+
+        #Choque de los tiros con los ladrillos
+        for m in  missileGroup:   
+            crashedBrick = pygame.sprite.spritecollideany(m, brickGroup)
+            if crashedBrick:           
+                    points = breakBrick(crashedBrick,m)
+                    addPowerUp(points,powerUpGroup,crashedBrick,SCR)
+                    resistenceColor(crashedBrick,SCR)
+                    isFallingBrick(SCR,m,crashedBrick)
+                    if points > 0:
+                        brickGroup.remove(crashedBrick)    
+                    SCR.blit(BACKGROUND, crashedBrick.rect, crashedBrick.rect)
+                    missileGroup.remove(m)
+                    SCR.blit(BACKGROUND,m.rect,m.rect)
+                    del m
+
+        #hace caer al power up
+        if len(powerUpGroup) > 0:
+            for power in powerUpGroup:
+                SCR.blit(BACKGROUND, power.rect, power.rect)
+                power.fallDown()    
+                SCR.blit(power.image, power.rect)
+                for brick in brickGroup:
+                    SCR.blit(brick.image,brick.rect)
+
+        #Verifica si el power up que cae choca con el jugador
+        powerUpColisioned = pygame.sprite.spritecollide(player, powerUpGroup, True)
+        #si choca, le da el power up al jugador
+        if len(powerUpColisioned) > 0:
+            for power in powerUpColisioned:
+                SCR.blit(BACKGROUND, powerUpColisioned[0], powerUpColisioned[0])
+                if powerUpColisioned[0].powerUp == POWER_LARGE[0]:
+                    SCR.blit(BACKGROUND, player.rect, player.rect)
+                    player.getBig()
+                    SCR.blit(player.image, player.rect)
+                elif powerUpColisioned[0].powerUp == POWER_FUERZA[0]:
+                    ball.strengthUp()
+                elif powerUpColisioned[0].powerUp == POWER_SMALL[0]:
+                    SCR.blit(BACKGROUND, player.rect, player.rect)
+                    player.getSmall()
+                    SCR.blit(player.image, player.rect)
+                elif powerUpColisioned[0].powerUp == POWER_SHOOT[0]:
+                    player.setShoot(5)
+                    shootPU = True
+                elif powerUpColisioned[0].powerUp == POWER_MULTIBALL[0]:
+                    if not waitingServe:
+                        multiBall(SCR,ballGroup,ball,3)
+                        updateBallPosition(SCR,ball)
+                    else:
+                        pass
+
+                SCR.blit(BACKGROUND, power, power)
+                powerUpGroup.remove(power)
+
+                
+                
+
+        drawScore()
+        drawLives()
+        
+        #Actualiza la pantalla
+        pygame.display.flip()
+
+
+        
+        if len(ballGroup) == 0:
+            lives -=1
+
+        if len(ballGroup)>=2:
+            for ball in ballGroup:
+                    if ball.rect.y > HEIGHT + 20:
+                        ballGroup.remove(ball)
+                        del ball
+
+        #Si la pelota se cae por abajo el jugador pierde una vida. Si pierde todas las vidas pierde el juego.
+        if len(ballGroup) == 1:
+            for ball in ballGroup:
+                if ball.rect.top > HEIGHT + 20:
+                    if lives > 1:
+                        lives -=1
+                        waitingServe = True   
+                        serve(player,ball)
+                        SCR.blit(BACKGROUND,flecha.rect,flecha.rect)
+                    else:
+                        gameOver()
+            
+        #condicion para ganar el juego
+        if len(brickGroup) == 0:
+            win()
+
+        if lives == 0:
+                gameOver()
+        
+        
+        
+        clock.tick(60)
 
 pygame.quit()
