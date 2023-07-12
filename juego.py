@@ -30,6 +30,9 @@ BRICKS_DISTANCE =10
 
 COLLISION_TOLARANCE = 10
 
+MISSILE_AMOUNT = 5
+BALL_AMOUNT = 3
+
 POWERU_UP_LIST= [POWER_FUERZA,POWER_LARGE,POWER_SMALL,POWER_SHOOT,POWER_MULTIBALL]
 
 BLACK = ( 0, 0, 0)
@@ -196,9 +199,9 @@ def isFallingBrick(SCR,proyectile,brick):
         SCR.blit(proyectile.image,proyectile.rect)
 
 
-def multiBall(SCR,ballGroup,b,num):
-        for i in range(num):
-            if not len(ballGroup)>=3:
+def multiBall(SCR,ballGroup,b,BALL_AMOUNT):
+        for i in range(BALL_AMOUNT):
+            if not len(ballGroup)>=BALL_AMOUNT:
                 if i % 2 == 0:
                     ballGroup.add(t.Pelota((b.rect.x+b.rect.width),b.rect.y))
                 else:
@@ -220,16 +223,27 @@ def updateBallPosition(SCR,ball):
     ball.move()
     SCR.blit(ball.image, ball.rect) 
 
-def mainMenu(menu):
-    menu.add.text_input('Name :', default='Nombre')
-    menu.add.button('Play',start_the_game )
-    menu.enable()
+def settingsMenu():
+    menu._open(settings)
+
 
 def start_the_game():
     global playing
     global menu
     menu.disable()
     playing = True
+
+    
+def config(brickAmount,livesAmount,missileAmount,ballAmount):
+    global BRICK_AMOUNT
+    global lives
+    global MISSILE_AMOUNT
+    global BALL_AMOUNT
+    BALL_AMOUNT = ballAmount
+    BRICK_AMOUNT = brickAmount
+    lives = livesAmount
+    MISSILE_AMOUNT = missileAmount
+
 
 
 def game():
@@ -241,9 +255,11 @@ def game():
     global missileGroup
     global powerUpGroup
     global playing
+    global BALL_AMOUNT
     global waitingServe
     global shootPU
     global lives
+    global MISSILE_AMOUNT
      #Bucle principal
     while playing:
         #Eventos del juego
@@ -424,11 +440,11 @@ def game():
                     player.getSmall()
                     SCR.blit(player.image, player.rect)
                 elif powerUpColisioned[0].powerUp == POWER_SHOOT[0]:
-                    player.setShoot(5)
+                    player.setShoot(MISSILE_AMOUNT)
                     shootPU = True
                 elif powerUpColisioned[0].powerUp == POWER_MULTIBALL[0]:
                     if not waitingServe:
-                        multiBall(SCR,ballGroup,ball,3)
+                        multiBall(SCR,ballGroup,ball,BALL_AMOUNT)
                         updateBallPosition(SCR,ball)
                     else:
                         pass
@@ -497,7 +513,7 @@ while not playing:
     lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
-    brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
+    
     brickGroup.draw(SCR)
 
     ballGroup = pygame.sprite.Group()
@@ -515,13 +531,35 @@ while not playing:
     flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
     missileGroup = pygame.sprite.Group()
 
-    powerUpGroup = pygame.sprite.Group()
-    menu = pygame_menu.Menu('Welcome',WIDTH, HEIGHT,
-                       theme=pygame_menu.themes.THEME_BLUE)
-    mainMenu(menu)
+    powerUpGroup = pygame.sprite.Group() 
     
+    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    menu.add.text_input('Name :', default='Nombre')
+    menu.add.button('Play',start_the_game )
+    menu.add.button('Settings',settingsMenu)
+    menu.add.button('Salir',pygame_menu.events.EXIT)
+
+    settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+   
+    settings.add.range_slider('cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
+    settings.add.range_slider('cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
+    settings.add.range_slider('cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
+    settings.add.range_slider('cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
+    settings.add.button('Volver',pygame_menu.events.BACK)
+    
+    menu.enable()
+
     menu.mainloop(SCR)
+    
+    SCR.blit(BACKGROUND,(0,0))
     if playing:
+        config(int(settings.get_widget("cantLadrillos").get_value()),
+               int(settings.get_widget("cantVidas").get_value()),
+               int(settings.get_widget("cantTiros").get_value()),
+               int(settings.get_widget("cantPelotas").get_value())
+               )
+
+        brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
         SCR.blit(BACKGROUND, (0, 0))
         SCR.blit(BACKGROUND, ball.rect, ball.rect) 
         SCR.blit(player.image, player.rect)
