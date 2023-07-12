@@ -1,4 +1,5 @@
 import pygame
+
 import jugador
 import pelota as t
 import ladrillo as ld
@@ -112,6 +113,8 @@ def serve(player,ball):
 
 #Texto de cuando el jugador pierde.
 def gameOver():
+    global playing
+    global menu
     text_surface, rect = GAME_FONT.render("GAME OVER", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -119,10 +122,13 @@ def gameOver():
     
     pygame.display.flip()
     time.sleep(3)
-    sys.exit()
+    playing = False
+    menu.enable()
 
 #Texto de cuando el jugador gana.
 def win():
+    global playing
+    global menu
     text_surface, rect = GAME_FONT.render("GANASTE", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -130,7 +136,8 @@ def win():
     
     pygame.display.flip()
     time.sleep(3)
-    sys.exit()
+    playing = False
+    menu.enable()
 
 #Rompe al ladrillo cuando algo le pega (pelota o power up de los tiros).
 def breakBrick(brk,proyectile):
@@ -143,6 +150,8 @@ def breakBrick(brk,proyectile):
         return brk.points
     else:
         return 0
+
+
 
 #Rebote vertical.
 def bounceV(brk, b):
@@ -203,7 +212,6 @@ def multiBall(SCR,ballGroup,b,num):
                     ball.invertHSpeed()
                 if i % 2 != 0:
                     ball.invertVSpeed()
-            
 
 
 
@@ -242,9 +250,9 @@ def game():
         for event in pygame.event.get():
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                pygame.quit()        
                 playing = False
+                sys.exit()
             #Eventos de apretar una tecla
             elif event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE and waitingServe):
@@ -471,52 +479,52 @@ def game():
         
         clock.tick(60)
 
+
 pygame.init()
-
-
 
 
 GAME_FONT = pygame.freetype.SysFont('roboto', 20, bold=False, italic=False)
 
-SCR.blit(BACKGROUND, (0, 0))
-
-brickGroup  = pygame.sprite.Group()
-brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
-brickGroup.draw(SCR)
-
-ballGroup = pygame.sprite.Group()
-ball = t.Pelota(WIDTH /2,HEIGHT/2)
-SCR.blit(BACKGROUND, ball.rect, ball.rect) 
-ballGroup.add([ball])
-
-playerGroup = pygame.sprite.Group()
-player = jugador.Jugador((WIDTH /2),HEIGHT -50)
-playerGroup.add([player])
-
-
-missileGroup = pygame.sprite.Group()
-
-powerUpGroup = pygame.sprite.Group()
-
 clock = pygame.time.Clock()
 
-lives = 3
-points = 0
 
-menu = pygame_menu.Menu('Welcome',WIDTH, HEIGHT,
-                       theme=pygame_menu.themes.THEME_BLUE)
-mainMenu(menu)
 
-waitingServe = True
 playing = False
-shootPU = False
 
-SCR.blit(player.image, player.rect)
-angle = 0
-flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
+
 while not playing:
+    
+    lives = 3
+    points = 0
+    brickGroup  = pygame.sprite.Group()
+    brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
+    brickGroup.draw(SCR)
+
+    ballGroup = pygame.sprite.Group()
+    ball = t.Pelota(WIDTH /2,HEIGHT/2)
+    
+    ballGroup.add([ball])
+
+    playerGroup = pygame.sprite.Group()
+    player = jugador.Jugador((WIDTH /2),HEIGHT -50)
+    playerGroup.add([player])
+    waitingServe = True
+
+    shootPU = False
+    angle = 0
+    flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
+    missileGroup = pygame.sprite.Group()
+
+    powerUpGroup = pygame.sprite.Group()
+    menu = pygame_menu.Menu('Welcome',WIDTH, HEIGHT,
+                       theme=pygame_menu.themes.THEME_BLUE)
+    mainMenu(menu)
+    
     menu.mainloop(SCR)
     if playing:
+        SCR.blit(BACKGROUND, (0, 0))
+        SCR.blit(BACKGROUND, ball.rect, ball.rect) 
+        SCR.blit(player.image, player.rect)
         game()
     
 pygame.quit()
