@@ -308,7 +308,6 @@ def game():
             serve(player,ball)
 
         if pygame.sprite.spritecollideany(player, ballGroup):
-            print('test')
             for ball in ballGroup:
                 #Choque con el jugador
 
@@ -342,9 +341,11 @@ def game():
 
         for ball in ballGroup:
             #Choque con limite de la pantalla
-            if ball.rect.top <= 0 - COLLISION_TOLARANCE :
+            if ball.rect.top < 0 - COLLISION_TOLARANCE and ball.verticalSpeed < 0 :
                 ball.invertVSpeed()
-            if ball.rect.left <= 0 or ball.rect.right >= WIDTH:
+            if abs(ball.rect.right - WIDTH) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
+                ball.invertHSpeed()
+            if abs(ball.rect.left+10) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
                 ball.invertHSpeed()
 
         for ball in ballGroup:
@@ -399,6 +400,9 @@ def game():
                 lives -= 1
                 SCR.blit(BACKGROUND, brick.rect, brick.rect)
                 brickGroup.remove(brick)
+                waitingServe = True   
+                serve(player,ball)
+                SCR.blit(BACKGROUND,flecha.rect,flecha.rect)
             if brick.rect.y > HEIGHT + 10:
                 SCR.blit(BACKGROUND, brick.rect, brick.rect)
                 brickGroup.remove(brick)
