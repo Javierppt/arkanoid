@@ -1,7 +1,7 @@
 import pygame
 
 import jugador
-import pelota as t
+import pelota as BALL
 import ladrillo as ld
 import pygame.freetype #Libreria que usamos para escribir en pantalla
 import time #Sirve para determinar los FPS del juego
@@ -82,7 +82,8 @@ def createBricks(amount,powerUps):
     return bricks
 
 #suma los puntos al puntaje total.
-def addScore(pts,SCORE):
+def addScore(pts):
+    global SCORE
     SCORE += pts
 
 
@@ -92,6 +93,7 @@ def addScore(pts,SCORE):
 
 #Dibuja el puntaje en la pantalla.
 def drawScore():
+
     text_surface, rect = GAME_FONT.render("Puntaje: " + str(SCORE), WHITE)
     rect.x = 0
     rect.y = HEIGHT / 1.15
@@ -177,7 +179,7 @@ def addPowerUp(points,powerUpGroup,brick,SCR):
     if points > 0:
                 SCR.blit(BACKGROUND, brick.rect, brick.rect)
                 brickGroup.remove(brick)
-                addScore(points,SCORE)
+                addScore(points)
                 if isinstance(brick, ld.ladrillo_p):
                     powerUpGroup.add([powerup.powerUp(brick.rect.x, brick.rect.y, brick.powerUp,brick.imagenPU)])
 
@@ -203,9 +205,9 @@ def multiBall(SCR,ballGroup,b,BALL_AMOUNT):
         for i in range(BALL_AMOUNT):
             if not len(ballGroup)>=BALL_AMOUNT:
                 if i % 2 == 0:
-                    ballGroup.add(t.Pelota((b.rect.x+b.rect.width),b.rect.y))
+                    ballGroup.add(BALL.Pelota((b.rect.x+b.rect.width),b.rect.y))
                 else:
-                    ballGroup.add(t.Pelota((b.rect.x-b.rect.width),b.rect.y))
+                    ballGroup.add(BALL.Pelota((b.rect.x-b.rect.width),b.rect.y))
         i = 0
         for ball in ballGroup: 
             ball.setSpeed(b.getSpeed()[0],b.getSpeed()[1])
@@ -260,7 +262,7 @@ def game():
     global shootPU
     global lives
     global MISSILE_AMOUNT
-     #Bucle principal
+    #Bucle principal
     while playing:
         #Eventos del juego
         for event in pygame.event.get():
@@ -305,20 +307,37 @@ def game():
             flecha.draw(SCR,player.rect.centerx, player.rect.centery - ball.rect.height)
             serve(player,ball)
 
-        for ball in ballGroup:
-            #Choque con el jugador
-            if pygame.sprite.spritecollideany(ball, playerGroup):
+        if pygame.sprite.spritecollideany(player, ballGroup):
+            print('test')
+            for ball in ballGroup:
+                #Choque con el jugador
+
+
                 if abs(ball.rect.top - player.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
                     bounceV(player, ball)
 
-                if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
-                    bounceV(player, ball)
+                    if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
+                        bounceV(player, ball)
 
+                    if abs(ball.rect.left - player.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
+                        bounceH(player, ball)
+                if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
+                    if ball.rect.centerx < player.rect.centerx :
+                        if ball.horizontalSpeed < 0:
+                            ball.horizontalSpeed -= 2
+                        else:
+                            ball.horizontalSpeed = BALL.SPEED
+                    elif ball.rect.centerx > player.rect.centerx :
+                        if ball.horizontalSpeed > 0:
+                            ball.horizontalSpeed += 2
+                        else:
+                            ball.horizontalSpeed = BALL.SPEED
+                    bounceV(player, ball)
                 if abs(ball.rect.left - player.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
                     bounceH(player, ball)
 
-                if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
-                    bounceH(player, ball)
+                    if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
+                        bounceH(player, ball)
 
 
         for ball in ballGroup:
@@ -363,7 +382,8 @@ def game():
                 
                     resistenceColor(brick,SCR)
                     addPowerUp(points,powerUpGroup,brick,SCR)
-
+                    if (points>0): 
+                        addScore(points)
                     isFallingBrick(SCR,ball,brick)
                     
                 
@@ -517,7 +537,7 @@ while not playing:
     brickGroup.draw(SCR)
 
     ballGroup = pygame.sprite.Group()
-    ball = t.Pelota(WIDTH /2,HEIGHT/2)
+    ball = BALL.Pelota(WIDTH /2,HEIGHT/2)
     
     ballGroup.add([ball])
 
