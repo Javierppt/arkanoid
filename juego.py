@@ -1,5 +1,5 @@
 import pygame
-
+import os
 import jugador
 import pelota as BALL
 import ladrillo as ld
@@ -11,11 +11,12 @@ import powerup
 import misil
 import flechitaSAque
 import pygame_menu
+import ctypes
 
 #Info del juego y Pantalla #test
 WIDTH = 1280 
 HEIGHT = 720
-SCORE = 0
+
 #Tupla = Letra que identifica a cada power up y su imagen
 POWER_LARGE = 'L',"resources/imgLarge.png"
 POWER_FUERZA = "F","resources/imgFuerza.png"
@@ -24,7 +25,7 @@ POWER_SHOOT = "M","resources/imgMissile.png"
 POWER_MULTIBALL = "B","resources/imgPelotas.png"
 
 SCR = pygame.display.set_mode((WIDTH,HEIGHT)) #inicializo la pantalla
-
+NAME = "Jugador"
 BRICK_AMOUNT = 100
 BRICKS_DISTANCE =10 
 
@@ -107,6 +108,13 @@ def drawLives():
     rect.y = HEIGHT / 1.05
     SCR.blit(BACKGROUND, rect, rect)
     SCR.blit(text_surface, rect, )
+
+def drawName():
+    text_surface, rect = GAME_FONT.render("Nombre: " + NAME, WHITE)
+    rect.x = 0
+    rect.y = HEIGHT / 1.25
+    SCR.blit(BACKGROUND, rect, rect)
+    SCR.blit(text_surface, rect )
 
 #Deja la pelota arriba del jugador, esperando al saque.
 def serve(player,ball):
@@ -236,19 +244,34 @@ def start_the_game():
     playing = True
 
     
-def config(brickAmount,livesAmount,missileAmount,ballAmount):
+def config(brickAmount,livesAmount,missileAmount,ballAmount,name,fullScreen = False):
     global BRICK_AMOUNT
     global lives
+    global NAME
     global MISSILE_AMOUNT
     global BALL_AMOUNT
+    global BACKGROUND
+    global HEIGHT
+    global WIDTH
+    global SCR
+
+   
+
+    if fullScreen:
+        SCR = pygame.display.set_mode((WIDTH,HEIGHT),pygame.FULLSCREEN)
+    else:
+        SCR = pygame.display.set_mode((WIDTH,HEIGHT))
     BALL_AMOUNT = ballAmount
     BRICK_AMOUNT = brickAmount
     lives = livesAmount
     MISSILE_AMOUNT = missileAmount
+    NAME = name
 
 
 
 def game():
+    global BACKGROUND
+    global NAME
     global ball
     global player
     global ballGroup
@@ -275,7 +298,9 @@ def game():
             elif event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_SPACE and waitingServe):
                     waitingServe = False     
-                    ball.serve(flecha.angle)    
+                    ball.serve(flecha.angle)  
+                elif  (event.key == pygame.K_ESCAPE):
+                    pygame.display.toggle_fullscreen()
                 elif (event.key == pygame.K_SPACE and not waitingServe and shootPU):
                     missile = misil.Misille(player.rect.centerx,player.rect.y)                
                     missileGroup.add([missile])
@@ -310,8 +335,6 @@ def game():
         if pygame.sprite.spritecollideany(player, ballGroup):
             for ball in ballGroup:
                 #Choque con el jugador
-
-
                 if abs(ball.rect.top - player.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
                     bounceV(player, ball)
 
@@ -325,19 +348,18 @@ def game():
                         if ball.horizontalSpeed < 0:
                             ball.horizontalSpeed -= 2
                         else:
-                            ball.horizontalSpeed = BALL.SPEED
+                            ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                     elif ball.rect.centerx > player.rect.centerx :
                         if ball.horizontalSpeed > 0:
                             ball.horizontalSpeed += 2
                         else:
-                            ball.horizontalSpeed = BALL.SPEED
+                            ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                     bounceV(player, ball)
                 if abs(ball.rect.left - player.rect.right) < COLLISION_TOLARANCE and ball.horizontalSpeed < 0:
                     bounceH(player, ball)
 
                     if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
                         bounceH(player, ball)
-
 
         for ball in ballGroup:
             #Choque con limite de la pantalla
@@ -478,7 +500,7 @@ def game():
 
                 
                 
-
+        drawName()
         drawScore()
         drawLives()
         
@@ -531,59 +553,79 @@ clock = pygame.time.Clock()
 
 playing = False
 
-
+#Bucle del menu
 while not playing:
-    
+
+    #resolucion actual de la pantalla
+    """user32 = ctypes.windll.user32
+    user32.SetProcessDPIAware()
+    resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
+
+
     lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
     
     brickGroup.draw(SCR)
-
+    SCORE = 0
     ballGroup = pygame.sprite.Group()
-    ball = BALL.Pelota(WIDTH /2,HEIGHT/2)
     
-    ballGroup.add([ball])
-
     playerGroup = pygame.sprite.Group()
-    player = jugador.Jugador((WIDTH /2),HEIGHT -50)
-    playerGroup.add([player])
+    
     waitingServe = True
 
     shootPU = False
-    angle = 0
-    flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
+      
     missileGroup = pygame.sprite.Group()
-
     powerUpGroup = pygame.sprite.Group() 
     
     menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
-    menu.add.text_input('Name :', default='Nombre')
+
+    menu.add.text_input('Name :', default=NAME,textinput_id="nombreJugador")
     menu.add.button('Play',start_the_game )
     menu.add.button('Settings',settingsMenu)
-    menu.add.button('Salir',pygame_menu.events.EXIT)
+    menu.add.button('Quit',pygame_menu.events.EXIT)
 
     settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
-   
-    settings.add.range_slider('cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
-    settings.add.range_slider('cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
-    settings.add.range_slider('cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
-    settings.add.range_slider('cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
-    settings.add.button('Volver',pygame_menu.events.BACK)
     
-    menu.enable()
+    settings.add.range_slider('Cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
+    settings.add.range_slider('Cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
+    settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
+    settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
+    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
 
+    
+    
+    settings.add.button('Volver',pygame_menu.events.BACK)
+
+    menu.enable()
     menu.mainloop(SCR)
     
+
+    settings.render()
+    
+        
     SCR.blit(BACKGROUND,(0,0))
     if playing:
+        angle = 0
+        
         config(int(settings.get_widget("cantLadrillos").get_value()),
                int(settings.get_widget("cantVidas").get_value()),
                int(settings.get_widget("cantTiros").get_value()),
-               int(settings.get_widget("cantPelotas").get_value())
+               int(settings.get_widget("cantPelotas").get_value()),
+               menu.get_widget("nombreJugador").get_value(),
+               settings.get_widget("fullScreen").get_value()
                )
-
+        
+        
+        player = jugador.Jugador((WIDTH /2),HEIGHT -50)
+        playerGroup.add([player])
+        ball = BALL.Pelota(WIDTH /2,HEIGHT/2)
+        ballGroup.add([ball])
+        flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
+        
         brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
+         
         SCR.blit(BACKGROUND, (0, 0))
         SCR.blit(BACKGROUND, ball.rect, ball.rect) 
         SCR.blit(player.image, player.rect)

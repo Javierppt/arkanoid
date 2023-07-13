@@ -16,6 +16,9 @@ class Pelota(pygame.sprite.Sprite):
         self.strenght = 1
         self.bounce = pygame.mixer.Sound("resources/rebotePelota.mp3")
 
+    def getDefaultSpeed():
+        return SPEED
+
     def getSpeed(self):
         return self.horizontalSpeed,self.verticalSpeed
     
