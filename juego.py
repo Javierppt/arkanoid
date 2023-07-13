@@ -12,7 +12,7 @@ import misil
 import flechitaSAque
 import pygame_menu
 import ctypes
-
+import high_scores as hs
 #Info del juego y Pantalla #test
 WIDTH = 1280 
 HEIGHT = 720
@@ -128,6 +128,10 @@ def serve(player,ball):
 def gameOver():
     global playing
     global menu
+    global SCORE
+    global NAME
+    global HIGH_SCORES
+    hs.record(NAME, SCORE, HIGH_SCORES)
     text_surface, rect = GAME_FONT.render("GAME OVER", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -142,6 +146,10 @@ def gameOver():
 def win():
     global playing
     global menu
+    global SCORE
+    global NAME
+    global HIGH_SCORES
+    hs.record(NAME, SCORE, HIGH_SCORES)
     text_surface, rect = GAME_FONT.render("GANASTE", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -254,8 +262,6 @@ def config(brickAmount,livesAmount,missileAmount,ballAmount,name,fullScreen = Fa
     global HEIGHT
     global WIDTH
     global SCR
-
-   
 
     if fullScreen:
         SCR = pygame.display.set_mode((WIDTH,HEIGHT),pygame.FULLSCREEN)
@@ -561,7 +567,7 @@ while not playing:
     user32.SetProcessDPIAware()
     resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
 
-
+    HIGH_SCORES = hs.load()
     lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
@@ -575,7 +581,7 @@ while not playing:
     waitingServe = True
 
     shootPU = False
-      
+
     missileGroup = pygame.sprite.Group()
     powerUpGroup = pygame.sprite.Group() 
     
