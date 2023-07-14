@@ -17,6 +17,8 @@ import ctypes
 WIDTH = 1280 
 HEIGHT = 720
 
+
+
 #Tupla = Letra que identifica a cada power up y su imagen
 POWER_LARGE = 'L',"resources/imgLarge.png"
 POWER_FUERZA = "F","resources/imgFuerza.png"
@@ -45,7 +47,7 @@ GRAY = (64,64,64)
 PURPLE=(148,0,211)
 
 BACKGROUND = pygame.image.load('resources/bg1.jpg').convert()
-
+PLAYLIST = ["resources/papupapu.mp3","resources/venYSanaMiDolor.mp3","resources/muchachosHomero.mp3"]
 #crea los ladrillos.
 def createBricks(amount,powerUps): 
     posWidth = 20
@@ -137,6 +139,8 @@ def gameOver():
     time.sleep(3)
     playing = False
     menu.enable()
+
+
 
 #Texto de cuando el jugador gana.
 def win():
@@ -264,8 +268,6 @@ def config(brickAmount,livesAmount,missileAmount,ballAmount,name,fullScreen = Fa
     global WIDTH
     global SCR
 
-   
-
     if fullScreen:
         SCR = pygame.display.set_mode((WIDTH,HEIGHT),pygame.FULLSCREEN)
     else:
@@ -276,6 +278,17 @@ def config(brickAmount,livesAmount,missileAmount,ballAmount,name,fullScreen = Fa
     MISSILE_AMOUNT = missileAmount
     NAME = name
 
+#Elige una cancion aleatoria y la reproduce.Cuando termina una sigue con otra.
+def playList():
+    global PLAYLIST
+    
+    rn.shuffle(PLAYLIST)
+
+    pygame.mixer.music.load ( PLAYLIST.pop() )  
+    pygame.mixer.music.queue ( PLAYLIST.pop() ) 
+    
+    pygame.mixer.music.set_volume(.3)
+    pygame.mixer.music.play() 
 
 
 def game():
@@ -295,10 +308,14 @@ def game():
     global shootPU
     global lives
     global MISSILE_AMOUNT
+    global PLAYLIST
     #Bucle principal
     while playing:
         #Eventos del juego
         for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:    
+                if len ( PLAYLIST ) > 0:      
+                    pygame.mixer.music.queue ( PLAYLIST.pop() ) 
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
                 pygame.quit()        
@@ -311,9 +328,13 @@ def game():
                     ball.serve(flecha.angle)  
                 elif  (event.key == pygame.K_ESCAPE):
                     pygame.display.toggle_fullscreen()
+                    SCR.blit(BACKGROUND,(0,0))
+                    #Esto hace que cuando se cambia de pantalla completa a ventana o al reves, no desaparezcan los ladrilllos
+                    for brick in brickGroup:
+                        SCR.blit(brick.image,brick.rect)
+                    pygame.display.flip()
                 elif (event.key == pygame.K_p):
-                    PAUSED = pause(PAUSED)
-                    
+                    PAUSED = pause(PAUSED) 
                 elif (event.key == pygame.K_SPACE and not waitingServe and shootPU):
                     missile = misil.Misille(player.rect.centerx,player.rect.y)                
                     missileGroup.add([missile])
@@ -322,7 +343,7 @@ def game():
                         shootPU = False
 
         joystick = pygame.key.get_pressed()
-
+        
         if PAUSED:
             pass
         else:
@@ -347,9 +368,9 @@ def game():
                 flecha.draw(SCR,player.rect.centerx, player.rect.centery - ball.rect.height)
                 serve(player,ball)
 
+            #Choque con el jugador
             if pygame.sprite.spritecollideany(player, ballGroup):
-                for ball in ballGroup:
-                    #Choque con el jugador
+                for ball in ballGroup:               
                     if abs(ball.rect.top - player.rect.bottom) < COLLISION_TOLARANCE and ball.verticalSpeed < 0:
                         bounceV(player, ball)
 
@@ -376,8 +397,8 @@ def game():
                         if abs(ball.rect.right - player.rect.left) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
                             bounceH(player, ball)
 
+            #Choque con limite de la pantalla
             for ball in ballGroup:
-                #Choque con limite de la pantalla
                 if ball.rect.top < 0 - COLLISION_TOLARANCE and ball.verticalSpeed < 0 :
                     ball.invertVSpeed()
                 if abs(ball.rect.right - WIDTH) < COLLISION_TOLARANCE and ball.horizontalSpeed > 0:
@@ -388,8 +409,8 @@ def game():
             for ball in ballGroup:
                 updateBallPosition(SCR,ball)
 
-            for ball in ballGroup:  
-                #Rebote de la pelota con los ladrillos 
+            #Rebote de las pelotas con los ladrillos 
+            for ball in ballGroup:                
                 collisionedBricks = pygame.sprite.spritecollide(ball, brickGroup, False)
                 if len(collisionedBricks) > 0:
                     ball.bounce.play()  
@@ -559,7 +580,6 @@ def game():
 
 pygame.init()
 
-
 GAME_FONT = pygame.freetype.SysFont('roboto', 20, bold=False, italic=False)
 
 clock = pygame.time.Clock()
@@ -567,7 +587,7 @@ clock = pygame.time.Clock()
 
 
 playing = False
-
+playList()
 #Bucle del menu
 while not playing:
 
@@ -576,7 +596,7 @@ while not playing:
     user32.SetProcessDPIAware()
     resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
 
-
+    
     lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
@@ -604,7 +624,7 @@ while not playing:
 
     settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
     
-    settings.add.range_slider('Cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
+    settings.add.range_slider('Cantidad de ladrillos :', 50,(10,100),int(2),rangeslider_id="cantLadrillos")
     settings.add.range_slider('Cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
     settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
     settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
@@ -620,10 +640,11 @@ while not playing:
     info.add.label("P: Pausa")
     info.add.label("Escapcio: Usa power Up de los tiros (Cuando la pelota esta en juego) ")
     info.add.button("Volver",pygame_menu.events.BACK)
-    
-    
-    
 
+    music = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    
+    
+    
     menu.enable()
     menu.mainloop(SCR)
     
