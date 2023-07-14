@@ -2,6 +2,7 @@ from operator import itemgetter
 import json
 FILE_NAME = 'high_score.txt'
 def load():
+    high_scores = []
     try:
         with open(FILE_NAME, 'r') as f:
             high_scores = json.load(f)
