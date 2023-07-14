@@ -47,7 +47,7 @@ GRAY = (64,64,64)
 PURPLE=(148,0,211)
 
 BACKGROUND = pygame.image.load('resources/bg1.jpg').convert()
-PLAYLIST = ["resources/venYSanaMiDolor.mp3","resources/muchachosHomero.mp3","resources/HomeroYDross.mp3","resources/MilHorasHomero.mp3"]
+PLAYLIST = ["resources/venYSanaMiDolor.mp3","resources/muchachosHomero.mp3","resources/HomeroYDross.mp3","resources/MilHorasHomero.mp3","resources/MilRosasHomero"]
 #crea los ladrillos.
 def createBricks(amount,powerUps): 
     posWidth = 20
@@ -655,12 +655,12 @@ while not playing:
     SCR.blit(BACKGROUND,(0,0))
     if playing:
         angle = 0
-        
+        NAME = menu.get_widget("nombreJugador").get_value()
         config(int(settings.get_widget("cantLadrillos").get_value()),
                int(settings.get_widget("cantVidas").get_value()),
                int(settings.get_widget("cantTiros").get_value()),
                int(settings.get_widget("cantPelotas").get_value()),
-               menu.get_widget("nombreJugador").get_value(),
+               NAME,
                settings.get_widget("fullScreen").get_value()
                )
         
