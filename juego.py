@@ -53,7 +53,8 @@ PLAYLIST = ["resources/muchachosHomero.mp3",
             "resources/HomeroYDross.mp3",
             "resources/MilHorasHomero.mp3",
             "resources/RosasHomero.mp3",
-            "resources/YoNoSeMañanaHomero.mp3"]
+            "resources/YoNoSeMañanaHomero.mp3",
+            "resources/ElChaqueñoPalavesimpson.mp3"]
 def createBricks(amount,powerUps): 
     posWidth = 20
     posHeight = 0   
@@ -366,10 +367,7 @@ def game():
                         pygame.mixer.music.set_volume(volume)
                     except Exception:
                         pass
-                elif event.key == pygame.K_n:
-                    musicEnd = pygame.USEREVENT+1
-                    pygame.mixer.music.set_endevent(musicEnd)
-
+              
 
         joystick = pygame.key.get_pressed()
         
@@ -643,6 +641,7 @@ while not playing:
       
     missileGroup = pygame.sprite.Group()
     powerUpGroup = pygame.sprite.Group() 
+
     
     menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
 
@@ -687,6 +686,7 @@ while not playing:
     if playing:
         
         angle = 0
+        #Estas asignaciones son para que se mantengan los cambios mientras el juego este abierto.
         NAME = menu.get_widget("nombreJugador").get_value()
         BRICK_AMOUNT = int(settings.get_widget("cantLadrillos").get_value())
         DEAFULLIVES = int(settings.get_widget("cantVidas").get_value())
@@ -710,6 +710,9 @@ while not playing:
         
         brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
          
+
+        
+
         SCR.blit(BACKGROUND, (0, 0))
         SCR.blit(BACKGROUND, ball.rect, ball.rect) 
         SCR.blit(player.image, player.rect)
