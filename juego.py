@@ -12,7 +12,7 @@ import misil
 import flechitaSAque
 import pygame_menu
 import ctypes
-
+import high_scores as hs
 #Info del juego y Pantalla #test
 WIDTH = 1280 
 HEIGHT = 720
@@ -136,6 +136,10 @@ def serve(player,ball):
 def gameOver():
     global playing
     global menu
+    global SCORE
+    global NAME
+    global HIGH_SCORES
+    hs.record(NAME, SCORE, HIGH_SCORES)
     text_surface, rect = GAME_FONT.render("GAME OVER", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -152,6 +156,10 @@ def gameOver():
 def win():
     global playing
     global menu
+    global SCORE
+    global NAME
+    global HIGH_SCORES
+    hs.record(NAME, SCORE, HIGH_SCORES)
     text_surface, rect = GAME_FONT.render("GANASTE", WHITE, size = 100)
     rect.centerx = WIDTH / 2
     rect.centery = HEIGHT / 2
@@ -248,7 +256,9 @@ def settingsMenu():
 
 def infoMenu():
     menu._open(info)
-
+def open_high_scores_menu():
+    menu._open(high_scores_menu)
+    
 def start_the_game():
     global playing
     global menu
@@ -332,6 +342,8 @@ def game():
                     pygame.mixer.music.queue ( PLAYLIST.pop() ) 
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
+                global HIGH_SCORES
+                hs.record(NAME, SCORE, HIGH_SCORES)
                 pygame.quit()        
                 playing = False
                 sys.exit()
@@ -627,8 +639,8 @@ while not playing:
     user32.SetProcessDPIAware()
     resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
 
-    
-   
+
+    lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
     
@@ -641,48 +653,37 @@ while not playing:
     waitingServe = True
 
     shootPU = False
-      
+
     missileGroup = pygame.sprite.Group()
     powerUpGroup = pygame.sprite.Group() 
-
     
-    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
+    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
 
     menu.add.text_input('Name :', default=NAME,textinput_id="nombreJugador")
     menu.add.button('Play',start_the_game )
+    menu.add.button('High Scores', open_high_scores_menu)
     menu.add.button('Settings',settingsMenu)
     menu.add.button('Info',infoMenu)
     menu.add.button('Quit',pygame_menu.events.EXIT)
 
     settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
     
-    settings.add.range_slider('Cantidad de ladrillos :', BRICK_AMOUNT,(10,100),int(2),rangeslider_id="cantLadrillos")
-    settings.add.range_slider('Cantidad de vidas :', DEFAULTLIVES,(1,10),int(1),rangeslider_id="cantVidas")
-    settings.add.range_slider('Cantidad de tiros (Power UP) :', MISSILE_AMOUNT,(1,10),int(1),rangeslider_id="cantTiros")
-    settings.add.range_slider('Cantidad de pelotas (Power UP) :', BALL_AMOUNT,(1,5),int(1),rangeslider_id="cantPelotas")
-    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=fullScreeen,state_text=("NO","SI"))
+    settings.add.range_slider('Cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
+    settings.add.range_slider('Cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
+    settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
+    settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
+    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
+
+    
+    
     settings.add.button('Volver',pygame_menu.events.BACK)
 
-    info = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
-    info.center_content()
-    info.add.label("Flecha izquierda/ flecha derecha: Movimiento del jugador")
-    info.add.label("A/D: Control de la direccion del saque")
-    info.add.label("Espacio: Saque")
-    info.add.label("ESC: Cambiar entre pantalla completa y modo ventana")
-    info.add.label("P: Pausa")
-    info.add.label("Escapcio: Usa power Up de los tiros (Cuando la pelota esta en juego) ")
-    info.add.label("Flecha arriba/ flecha abajo: Controlar volumen de la musica")
-    info.add.button("Volver",pygame_menu.events.BACK)
-
-    music = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
-    
-    
-    
     menu.enable()
     menu.mainloop(SCR)
     
 
     settings.render()
+    high_scores_menu.render()
     
         
     SCR.blit(BACKGROUND,(0,0))
