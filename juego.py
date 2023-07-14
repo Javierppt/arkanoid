@@ -46,6 +46,7 @@ BLUE = (0,0,255)
 GRAY = (64,64,64)
 PURPLE=(148,0,211)
 
+
 BACKGROUND = pygame.image.load('resources/bg1.jpg').convert()
 PLAYLIST = ["resources/venYSanaMiDolor.mp3",
             "resources/muchachosHomero.mp3",
