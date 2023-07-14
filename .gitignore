@@ -1,3 +1,4 @@
 #ignora mi ENV
 env/
 __pycache__/
+high_score.txt
