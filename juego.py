@@ -31,7 +31,7 @@ NAME = "Jugador"
 BRICK_AMOUNT = 100
 BRICKS_DISTANCE =10 
 
-COLLISION_TOLARANCE = 10
+COLLISION_TOLARANCE = 20
 
 MISSILE_AMOUNT = 5
 BALL_AMOUNT = 3
@@ -409,12 +409,12 @@ def game():
                     if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
                         if ball.rect.centerx < player.rect.centerx :
                             if ball.horizontalSpeed < 0:
-                                ball.horizontalSpeed -= 0.5
+                                ball.horizontalSpeed -= 1
                             else:
                                 ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                         elif ball.rect.centerx > player.rect.centerx :
                             if ball.horizontalSpeed > 0:
-                                ball.horizontalSpeed += 0.5
+                                ball.horizontalSpeed += 1
                             else:
                                 ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                         bounceV(player, ball)
@@ -554,6 +554,7 @@ def game():
                     elif powerUpColisioned[0].powerUp == POWER_MULTIBALL[0]:
                         if not waitingServe:
                             multiBall(SCR,ballGroup,ball,BALL_AMOUNT)
+
                             updateBallPosition(SCR,ball)
                         else:
                             pass
@@ -584,6 +585,8 @@ def game():
             #Si la pelota se cae por abajo el jugador pierde una vida. Si pierde todas las vidas pierde el juego.
             if len(ballGroup) == 1:
                 for ball in ballGroup:
+                    if -1 < ball.getSpeed()[1] < 1:
+                        ball.setSpeed(BALL.Pelota.getDefaultSpeed(),-BALL.Pelota.getDefaultSpeed())
                     if ball.rect.top > HEIGHT + 20:
                         if lives > 1:
                             lives -=1
@@ -706,11 +709,13 @@ while not playing:
         playerGroup.add([player])
         ball = BALL.Pelota(WIDTH /2,HEIGHT/2)
         ballGroup.add([ball])
+        print(len(ballGroup))
         flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
         
         brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
          
 
+        
         
 
         SCR.blit(BACKGROUND, (0, 0))
