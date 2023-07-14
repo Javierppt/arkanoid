@@ -613,8 +613,9 @@ GAME_FONT = pygame.freetype.SysFont('roboto', 20, bold=False, italic=False)
 
 clock = pygame.time.Clock()
 
-
-
+fullScreeen = False
+lives = 3
+DEFAULTLIVES = 3
 playing = False
 playList()
 #Bucle del menu
@@ -626,7 +627,7 @@ while not playing:
     resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
 
     
-    lives = 3
+   
     points = 0
     brickGroup  = pygame.sprite.Group()
     
@@ -643,7 +644,7 @@ while not playing:
     missileGroup = pygame.sprite.Group()
     powerUpGroup = pygame.sprite.Group() 
     
-    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
 
     menu.add.text_input('Name :', default=NAME,textinput_id="nombreJugador")
     menu.add.button('Play',start_the_game )
@@ -651,16 +652,16 @@ while not playing:
     menu.add.button('Info',infoMenu)
     menu.add.button('Quit',pygame_menu.events.EXIT)
 
-    settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
     
-    settings.add.range_slider('Cantidad de ladrillos :', 50,(10,100),int(2),rangeslider_id="cantLadrillos")
-    settings.add.range_slider('Cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
-    settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
-    settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
-    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
+    settings.add.range_slider('Cantidad de ladrillos :', BRICK_AMOUNT,(10,100),int(2),rangeslider_id="cantLadrillos")
+    settings.add.range_slider('Cantidad de vidas :', DEFAULTLIVES,(1,10),int(1),rangeslider_id="cantVidas")
+    settings.add.range_slider('Cantidad de tiros (Power UP) :', MISSILE_AMOUNT,(1,10),int(1),rangeslider_id="cantTiros")
+    settings.add.range_slider('Cantidad de pelotas (Power UP) :', BALL_AMOUNT,(1,5),int(1),rangeslider_id="cantPelotas")
+    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=fullScreeen,state_text=("NO","SI"))
     settings.add.button('Volver',pygame_menu.events.BACK)
 
-    info = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    info = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
     info.center_content()
     info.add.label("Flecha izquierda/ flecha derecha: Movimiento del jugador")
     info.add.label("A/D: Control de la direccion del saque")
@@ -684,14 +685,20 @@ while not playing:
         
     SCR.blit(BACKGROUND,(0,0))
     if playing:
+        
         angle = 0
         NAME = menu.get_widget("nombreJugador").get_value()
-        config(int(settings.get_widget("cantLadrillos").get_value()),
-               int(settings.get_widget("cantVidas").get_value()),
-               int(settings.get_widget("cantTiros").get_value()),
-               int(settings.get_widget("cantPelotas").get_value()),
+        BRICK_AMOUNT = int(settings.get_widget("cantLadrillos").get_value())
+        DEAFULLIVES = int(settings.get_widget("cantVidas").get_value())
+        MISSILE_AMOUNT = int(settings.get_widget("cantTiros").get_value())
+        BALL_AMOUNT =int(settings.get_widget("cantPelotas").get_value())
+        fullScreeen = settings.get_widget("fullScreen").get_value()
+        config(BRICK_AMOUNT,
+               DEAFULLIVES,
+               MISSILE_AMOUNT,
+               BALL_AMOUNT,
                NAME,
-               settings.get_widget("fullScreen").get_value()
+               fullScreeen
                )
         
         
