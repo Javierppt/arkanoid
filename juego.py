@@ -47,7 +47,7 @@ GRAY = (64,64,64)
 PURPLE=(148,0,211)
 
 BACKGROUND = pygame.image.load('resources/bg1.jpg').convert()
-PLAYLIST = ["resources/papupapu.mp3","resources/venYSanaMiDolor.mp3","resources/muchachosHomero.mp3"]
+PLAYLIST = ["resources/venYSanaMiDolor.mp3","resources/muchachosHomero.mp3"]
 #crea los ladrillos.
 def createBricks(amount,powerUps): 
     posWidth = 20
@@ -382,12 +382,12 @@ def game():
                     if abs(ball.rect.bottom - player.rect.top) < COLLISION_TOLARANCE and ball.verticalSpeed > 0:
                         if ball.rect.centerx < player.rect.centerx :
                             if ball.horizontalSpeed < 0:
-                                ball.horizontalSpeed -= 2
+                                ball.horizontalSpeed -= 0.5
                             else:
                                 ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                         elif ball.rect.centerx > player.rect.centerx :
                             if ball.horizontalSpeed > 0:
-                                ball.horizontalSpeed += 2
+                                ball.horizontalSpeed += 0.5
                             else:
                                 ball.horizontalSpeed = BALL.Pelota.getDefaultSpeed()
                         bounceV(player, ball)
