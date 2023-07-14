@@ -4,7 +4,7 @@ import jugador
 import pelota as BALL
 import ladrillo as ld
 import pygame.freetype #Libreria que usamos para escribir en pantalla
-import time #Sirve para determinar los FPS del juego
+import time 
 import sys #
 import random as rn #generar numeros al azar
 import powerup
@@ -236,6 +236,8 @@ def updateBallPosition(SCR,ball):
 def settingsMenu():
     menu._open(settings)
 
+def infoMenu():
+    menu._open(info)
 
 def start_the_game():
     global playing
@@ -301,10 +303,11 @@ def game():
                     ball.serve(flecha.angle)  
                 elif  (event.key == pygame.K_ESCAPE):
                     pygame.display.toggle_fullscreen()
+                elif (event.key == pygame.K_p):
+                    pygame.pau
                 elif (event.key == pygame.K_SPACE and not waitingServe and shootPU):
                     missile = misil.Misille(player.rect.centerx,player.rect.y)                
                     missileGroup.add([missile])
-                    
                     player.setShoot(player.getShoot()-1)
                     if player.getShoot() == 0:
                         shootPU = False
@@ -584,6 +587,7 @@ while not playing:
     menu.add.text_input('Name :', default=NAME,textinput_id="nombreJugador")
     menu.add.button('Play',start_the_game )
     menu.add.button('Settings',settingsMenu)
+    menu.add.button('Info',infoMenu)
     menu.add.button('Quit',pygame_menu.events.EXIT)
 
     settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
@@ -593,10 +597,20 @@ while not playing:
     settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
     settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
     settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
-
-    
-    
     settings.add.button('Volver',pygame_menu.events.BACK)
+
+    info = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    info.center_content()
+    info.add.label("Flecha izquierda/ flecha derecha: Movimiento del jugador")
+    info.add.label("A/D: Control de la direccion del saque")
+    info.add.label("Espacio: Saque")
+    info.add.label("ESC: Cambiar entre pantalla completa y modo ventana")
+    
+    info.add.label("Escapcio: Usa power Up de los tiros (Cuando la pelota esta en juego) ")
+    info.add.button("Volver",pygame_menu.events.BACK)
+    
+    
+    
 
     menu.enable()
     menu.mainloop(SCR)
