@@ -326,7 +326,7 @@ def game():
                 if len ( PLAYLIST ) > 0:
                     auxPlayList.append(PLAYLIST[len(PLAYLIST)])
                     pygame.mixer.music.queue ( PLAYLIST.pop() ) 
-                    print(auxPlayList)
+
                 else:
                     PLAYLIST = auxPlayList
                     pygame.mixer.music.queue ( PLAYLIST.pop() ) 
@@ -709,7 +709,6 @@ while not playing:
         playerGroup.add([player])
         ball = BALL.Pelota(WIDTH /2,HEIGHT/2)
         ballGroup.add([ball])
-        print(len(ballGroup))
         flecha = flechitaSAque.FlechitaSaque(player.rect.centerx, player.rect.centery - ball.rect.height, 80, 10)
         
         brickGroup.add( [createBricks(BRICK_AMOUNT,POWERU_UP_LIST)])
