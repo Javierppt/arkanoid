@@ -347,6 +347,19 @@ def game():
                     player.setShoot(player.getShoot()-1)
                     if player.getShoot() == 0:
                         shootPU = False
+                elif event.key == pygame.K_UP:
+                    volume = pygame.mixer.music.get_volume() + .1
+                    try:
+                        pygame.mixer.music.set_volume(volume)
+                    except Exception:
+                        pass
+                elif event.key == pygame.K_DOWN:
+                    volume = pygame.mixer.music.get_volume() - .1
+                    try:
+                        pygame.mixer.music.set_volume(volume)
+                    except Exception:
+                        pass
+
 
         joystick = pygame.key.get_pressed()
         
@@ -645,6 +658,7 @@ while not playing:
     info.add.label("ESC: Cambiar entre pantalla completa y modo ventana")
     info.add.label("P: Pausa")
     info.add.label("Escapcio: Usa power Up de los tiros (Cuando la pelota esta en juego) ")
+    info.add.label("Flecha arriba/ flecha abajo: Controlar volumen de la musica")
     info.add.button("Volver",pygame_menu.events.BACK)
 
     music = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
