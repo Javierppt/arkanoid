@@ -17,7 +17,7 @@ import ctypes
 WIDTH = 1280 
 HEIGHT = 720
 
-
+auxPlayList = []
 
 #Tupla = Letra que identifica a cada power up y su imagen
 POWER_LARGE = 'L',"resources/imgLarge.png"
@@ -48,13 +48,12 @@ PURPLE=(148,0,211)
 
 
 BACKGROUND = pygame.image.load('resources/bg1.jpg').convert()
-PLAYLIST = ["resources/venYSanaMiDolor.mp3",
-            "resources/muchachosHomero.mp3",
+PLAYLIST = ["resources/muchachosHomero.mp3",
+            "resources/venYSanaMiDolor.mp3",
             "resources/HomeroYDross.mp3",
             "resources/MilHorasHomero.mp3",
             "resources/RosasHomero.mp3",
             "resources/YoNoSeMañanaHomero.mp3"]
-#crea los ladrillos.
 def createBricks(amount,powerUps): 
     posWidth = 20
     posHeight = 0   
@@ -291,7 +290,10 @@ def playList():
     rn.shuffle(PLAYLIST)
 
     pygame.mixer.music.load ( PLAYLIST.pop() )  
-    pygame.mixer.music.queue ( PLAYLIST.pop() ) 
+    try:
+        pygame.mixer.music.queue ( PLAYLIST.pop() ) 
+    except Exception:
+        pass
     
     pygame.mixer.music.set_volume(.3)
     pygame.mixer.music.play() 
@@ -320,7 +322,12 @@ def game():
         #Eventos del juego
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:    
-                if len ( PLAYLIST ) > 0:      
+                if len ( PLAYLIST ) > 0:
+                    auxPlayList.append(PLAYLIST[len(PLAYLIST)])
+                    pygame.mixer.music.queue ( PLAYLIST.pop() ) 
+                    print(auxPlayList)
+                else:
+                    PLAYLIST = auxPlayList
                     pygame.mixer.music.queue ( PLAYLIST.pop() ) 
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
@@ -359,6 +366,9 @@ def game():
                         pygame.mixer.music.set_volume(volume)
                     except Exception:
                         pass
+                elif event.key == pygame.K_n:
+                    musicEnd = pygame.USEREVENT+1
+                    pygame.mixer.music.set_endevent(musicEnd)
 
 
         joystick = pygame.key.get_pressed()
