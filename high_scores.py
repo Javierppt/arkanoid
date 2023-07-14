@@ -18,6 +18,6 @@ def record(player_name, player_score, high_scores):
     with open(FILE_NAME, 'w') as f:
         json.dump(high_scores, f)
 
-def get_best_ten():
-    pass
+def get_best_ten(f):
+    return(f[0:9])
 #high_scores = []

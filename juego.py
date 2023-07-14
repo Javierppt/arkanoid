@@ -244,7 +244,9 @@ def updateBallPosition(SCR,ball):
 def settingsMenu():
     menu._open(settings)
 
-
+def open_high_scores_menu():
+    menu._open(high_scores_menu)
+    
 def start_the_game():
     global playing
     global menu
@@ -297,6 +299,8 @@ def game():
         for event in pygame.event.get():
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
+                global HIGH_SCORES
+                hs.record(NAME, SCORE, HIGH_SCORES)
                 pygame.quit()        
                 playing = False
                 sys.exit()
@@ -568,6 +572,7 @@ while not playing:
     resH, resV = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)"""
 
     HIGH_SCORES = hs.load()
+    hs.get_best_ten(HIGH_SCORES)
     lives = 3
     points = 0
     brickGroup  = pygame.sprite.Group()
@@ -585,30 +590,39 @@ while not playing:
     missileGroup = pygame.sprite.Group()
     powerUpGroup = pygame.sprite.Group() 
     
-    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    menu = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT, theme=pygame_menu.themes.THEME_DARK)
 
     menu.add.text_input('Name :', default=NAME,textinput_id="nombreJugador")
     menu.add.button('Play',start_the_game )
+    menu.add.button('High Scores', open_high_scores_menu)
     menu.add.button('Settings',settingsMenu)
     menu.add.button('Quit',pygame_menu.events.EXIT)
 
-    settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT)
+    settings = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
     
     settings.add.range_slider('Cantidad de ladrillos :', 10,(10,100),int(2),rangeslider_id="cantLadrillos")
     settings.add.range_slider('Cantidad de vidas :', 3,(1,10),int(1),rangeslider_id="cantVidas")
     settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
     settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
     settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
-
-    
-    
     settings.add.button('Volver',pygame_menu.events.BACK)
 
+    print(HIGH_SCORES)
+
+    high_scores_menu = pygame_menu.Menu('Arkanoid - Puntajes altos', WIDTH, HEIGHT, theme=pygame_menu.themes.THEME_DARK)
+    for score in HIGH_SCORES[:9]:
+        high_scores_menu.add.label(score[0] + ' ' + str(score[1]))
+    #high_scores_menu.add.label()
+    
+    #high_scores_menu.add.table('hs_id').add_row((str(HIGH_SCORES[0]),str(HIGH_SCORES[1])))
+    #high_scores_menu._widgets.table('hs_id').add_row(HIGH_SCORES[1])
+    high_scores_menu.add.button('Volver',pygame_menu.events.BACK)
     menu.enable()
     menu.mainloop(SCR)
     
 
     settings.render()
+    high_scores_menu.render()
     
         
     SCR.blit(BACKGROUND,(0,0))
