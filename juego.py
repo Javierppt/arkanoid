@@ -256,7 +256,6 @@ def settingsMenu():
 
 def infoMenu():
     menu._open(info)
-
 def open_high_scores_menu():
     menu._open(high_scores_menu)
     
@@ -678,6 +677,9 @@ while not playing:
     settings.add.range_slider('Cantidad de tiros (Power UP) :', 5,(1,10),int(1),rangeslider_id="cantTiros")
     settings.add.range_slider('Cantidad de pelotas (Power UP) :', 3,(1,5),int(1),rangeslider_id="cantPelotas")
     settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=False,state_text=("NO","SI"))
+
+    
+    
     settings.add.button('Volver',pygame_menu.events.BACK)
 
 
@@ -686,6 +688,10 @@ while not playing:
         high_scores_menu.add.label(score[0] + ' ' + str(score[1]))
 
     high_scores_menu.add.button('Volver',pygame_menu.events.BACK)
+    
+    
+    settings.add.button('Volver',pygame_menu.events.BACK)
+
     menu.enable()
     menu.mainloop(SCR)
     
