@@ -332,14 +332,16 @@ def game():
     while playing:
         #Eventos del juego
         for event in pygame.event.get():
-            if event.type == pygame.USEREVENT:    
+            if event.type == pygame.USEREVENT: 
+                #Esto es para que la lista se vuelva a repetir cuando termina.
+                if len( PLAYLIST) == 0:
+                    PLAYLIST = auxPlayList
+                    playList(PLAYLIST)  
                 if len ( PLAYLIST ) > 0:
                     auxPlayList.append(PLAYLIST[len(PLAYLIST)])
                     pygame.mixer.music.queue ( PLAYLIST.pop() ) 
-
-                else:
-                    PLAYLIST = auxPlayList
-                    pygame.mixer.music.queue ( PLAYLIST.pop() ) 
+             
+                    
             #Cierra el juego con la cruz
             if event.type == pygame.QUIT:
                 global HIGH_SCORES
@@ -626,7 +628,7 @@ GAME_FONT = pygame.freetype.SysFont('roboto', 20, bold=False, italic=False)
 
 clock = pygame.time.Clock()
 
-fullScreeen = False
+fullScreen = False
 lives = 3
 DEFAULTLIVES = 3
 playing = False
@@ -676,7 +678,7 @@ while not playing:
     settings.add.range_slider('Cantidad de vidas :', DEFAULTLIVES,(1,10),int(1),rangeslider_id="cantVidas")
     settings.add.range_slider('Cantidad de tiros (Power UP) :', MISSILE_AMOUNT,(1,10),int(1),rangeslider_id="cantTiros")
     settings.add.range_slider('Cantidad de pelotas (Power UP) :', BALL_AMOUNT,(1,5),int(1),rangeslider_id="cantPelotas")
-    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=fullScreeen,state_text=("NO","SI"))
+    settings.add.toggle_switch('Full screen (ESC en el juego):',toggleswitch_id="fullScreen",default=fullScreen,state_text=("NO","SI"))
     settings.add.button('Volver',pygame_menu.events.BACK)
 
     info = pygame_menu.Menu('Arkanoid',WIDTH, HEIGHT,theme=pygame_menu.themes.THEME_DARK)
